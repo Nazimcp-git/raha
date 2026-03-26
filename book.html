@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raha Counselling | iOS Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; background-color: #F2F2F7; }
+        .ios-blur { backdrop-filter: saturate(180%) blur(20px); background-color: rgba(255,255,255,0.7); }
+        .ios-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .ios-input { background: #F2F2F7; border: 1px solid transparent; transition: all 0.2s; border-radius: 12px; }
+        .ios-input:focus { background: #FFFFFF; border-color: #007AFF; box-shadow: 0 0 0 4px rgba(0,122,255,0.1); outline: none; }
+        .ios-btn { transition: transform 0.1s ease; }
+        .ios-btn:active { transform: scale(0.97); }
+        .page { display: none; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Mode Toggle */
+        .mode-toggle { display: flex; background: #F2F2F7; border-radius: 12px; padding: 4px; gap: 4px; }
+        .mode-btn { flex: 1; padding: 10px; border-radius: 9px; text-align: center; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: #8E8E93; border: none; background: transparent; }
+        .mode-btn.active { background: #FFFFFF; color: #007AFF; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+        /* Receipt Styles (for html2canvas) */
+        #receipt-card {
+            width: 360px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        .receipt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .receipt-logo { font-size: 20px; font-weight: 800; color: #1C1C1E; }
+        .receipt-logo span { color: #007AFF; }
+        .receipt-id { font-size: 10px; font-weight: 700; color: #8E8E93; letter-spacing: 0.08em; text-transform: uppercase; }
+        .receipt-divider { border: none; border-top: 1px solid #F2F2F7; margin: 12px 0; }
+        .receipt-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .receipt-label { font-size: 11px; color: #8E8E93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .receipt-value { font-size: 13px; color: #1C1C1E; font-weight: 600; text-align: right; max-width: 60%; }
+        .receipt-mode-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .receipt-mode-online { background: #E8F5E9; color: #2E7D32; }
+        .receipt-mode-offline { background: #FFF3E0; color: #E65100; }
+        .receipt-footer { margin-top: 18px; background: #F2F2F7; border-radius: 12px; padding: 12px; text-align: center; }
+        .receipt-footer p { font-size: 11px; color: #8E8E93; margin: 0; }
+        .receipt-qr { width: 48px; height: 48px; background: #007AFF; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+        /* Analytics Tab */
+        .analytics-tab-btn { flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 700; color: #8E8E93; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .analytics-tab-btn.active { color: #007AFF; border-bottom-color: #007AFF; }
+        .analytics-pane { display: none; }
+        .analytics-pane.active { display: block; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Header -->
+    <header class="ios-blur fixed top-0 w-full z-50 border-b border-gray-200/50">
+        <div class="max-w-xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight">Raha<span class="text-blue-600">Counselling</span></h1>
+            <nav class="flex gap-4">
+                <button onclick="navigate('booking')" id="nav-booking" class="text-sm font-semibold text-blue-600">Book</button>
+                
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto pt-24 pb-12 px-6">
+
+        <!-- ── BOOKING PAGE ── -->
+        <section id="page-booking" class="page active">
+            <div class="mb-8">
+                <p id="current-date-display" class="text-blue-600 font-semibold text-sm mb-1 uppercase tracking-widest"></p>
+                <h2 class="text-3xl font-extrabold">New Appointment</h2>
+            </div>
+
+            <div class="ios-card p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-sm font-medium text-gray-500">Selected Date Availability</span>
+                    <span id="slots-left" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Checking...</span>
+                </div>
+
+                <form id="bookingForm" class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 ml-1 uppercase">Date of Visit</label>
+                        <input type="date" id="pDate" class="ios-input w-full p-4 mt-1" required>
+                    </div>
+
+                    <!-- Mode Toggle -->
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 ml-1 uppercase block mb-2">Consultation Mode</label>
+                        <div class="mode-toggle">
+                            <button type="button" class="mode-btn active" id="mode-offline" onclick="setMode('Offline')">
+                                🏥 In-Person
+                            </button>
+                            <button type="button" class="mode-btn" id="mode-online" onclick="setMode('Online')">
+                                💻 Online / Tele
+                            </button>
+                        </div>
+                        <input type="hidden" id="pMode" value="Offline">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="pName" placeholder="Patient Name" class="ios-input w-full p-4" required>
+                        <input type="number" id="pAge" placeholder="Age" class="ios-input w-full p-4" required>
+                    </div>
+
+                    <input type="text" id="pPlace" placeholder="Location" class="ios-input w-full p-4" required>
+
+                    <select id="pDoctor" class="ios-input w-full p-4" required>
+                        <option value="" disabled selected>Select Doctor</option>
+                    </select>
+
+                    <select id="pTime" class="ios-input w-full p-4" required>
+                        <option value="" disabled selected>Select Time Slot</option>
+                    </select>
+
+                    <input type="tel" id="pContact" placeholder="Contact Number" class="ios-input w-full p-4" required>
+                    <textarea id="pProblem" placeholder="What is the problem?" class="ios-input w-full p-4 h-24" required></textarea>
+
+                    <button type="submit" id="submitBtn" class="ios-btn w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200">
+                        Request Appointment
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ── HOSPITAL LETTER MODAL ── -->
+        <div id="letter-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+            <div class="ios-card w-full max-w-md p-8 relative overflow-y-auto max-h-[90vh]">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Request Received</h3>
+                    <div class="border-t border-b border-gray-100 py-6 my-4 text-left space-y-3">
+                        <p class="text-sm text-gray-600">Dear Patient,</p>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Thank you for choosing <strong>Raha Counselling Hospital</strong>. We have received your appointment request. Our coordination team is currently verifying the schedule.
+                        </p>
+                        <p class="text-sm font-semibold text-blue-700 bg-blue-50 p-3 rounded-lg">
+                            We will contact you shortly on your provided number to finalize your visit.
+                        </p>
+                    </div>
+
+                    <!-- Receipt Preview (hidden div used for canvas rendering) -->
+                    <div id="receipt-wrapper" class="mb-4 flex justify-center">
+                        <div id="receipt-card">
+                            <div class="receipt-header">
+                                <div>
+                                    <div class="receipt-logo">Med<span>Point</span></div>
+                                    <div class="receipt-id" id="r-id">ID: #000000</div>
+                                </div>
+                                <div class="receipt-qr">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                        <rect x="3" y="3" width="7" height="7" rx="1" fill="white"/>
+                                        <rect x="14" y="3" width="7" height="7" rx="1" fill="white"/>
+                                        <rect x="3" y="14" width="7" height="7" rx="1" fill="white"/>
+                                        <rect x="14" y="14" width="3" height="3" rx="0.5" fill="white"/>
+                                        <rect x="18" y="14" width="3" height="3" rx="0.5" fill="white"/>
+                                        <rect x="14" y="18" width="3" height="3" rx="0.5" fill="white"/>
+                                        <rect x="18" y="18" width="3" height="3" rx="0.5" fill="white"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <hr class="receipt-divider">
+                            <div class="receipt-row"><span class="receipt-label">Patient</span><span class="receipt-value" id="r-name">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Age</span><span class="receipt-value" id="r-age">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Location</span><span class="receipt-value" id="r-place">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Doctor</span><span class="receipt-value" id="r-doctor">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Date</span><span class="receipt-value" id="r-date">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Time</span><span class="receipt-value" id="r-time">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Mode</span><span class="receipt-value" id="r-mode">—</span></div>
+                            <div class="receipt-row"><span class="receipt-label">Contact</span><span class="receipt-value" id="r-contact">—</span></div>
+                            <hr class="receipt-divider">
+                            <div class="receipt-footer">
+                                <p>Raha Counselling Hospital · Keep this receipt for your records</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="downloadReceipt()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 ios-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Download Receipt
+                        </button>
+                        <button onclick="closeLetter()" class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl ios-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ADMIN PAGE ── -->
+        <section id="page-admin" class="page">
+            <!-- Password Gate -->
+            <div id="admin-auth" class="ios-card p-8 text-center">
+                <h2 class="text-2xl font-bold mb-4">Admin Access</h2>
+                <input type="password" id="admin-pass" placeholder="Enter Password" class="ios-input w-full p-4 mb-4 text-center">
+                <button onclick="checkAdmin()" class="bg-blue-600 text-white w-full py-3 rounded-xl font-bold">Login</button>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="admin-content" class="hidden space-y-6">
+
+                <!-- Manage Resources -->
+                <div class="ios-card p-6">
+                    <h3 class="font-bold mb-4">Manage Resources</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="new-doctor" placeholder="Doctor Name" class="ios-input flex-1 p-2 text-sm">
+                        <button onclick="addDoctor()" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">+</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-time" placeholder="HH:MM AM/PM" class="ios-input flex-1 p-2 text-sm">
+                        <button onclick="addTime()" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">+</button>
+                    </div>
+                </div>
+
+                <!-- Registry -->
+                <div class="ios-card p-6 overflow-hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold">Registry</h3>
+                        <input type="date" id="filterDate" class="text-xs font-bold bg-gray-100 p-2 rounded-lg border-none outline-none">
+                    </div>
+                    <div class="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar" id="admin-list"></div>
+                </div>
+
+                <!-- ── ANALYTICS ── -->
+                <div class="ios-card p-6">
+                    <h3 class="font-bold mb-4">Analytics</h3>
+
+                    <!-- Sub-tabs -->
+                    <div class="flex border-b border-gray-100 mb-5">
+                        <button class="analytics-tab-btn active" id="atab-doctor" onclick="switchAnalyticsTab('doctor')">By Doctor</button>
+                        <button class="analytics-tab-btn" id="atab-date" onclick="switchAnalyticsTab('date')">By Date</button>
+                        <button class="analytics-tab-btn" id="atab-mode" onclick="switchAnalyticsTab('mode')">By Mode</button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex gap-3 mb-4">
+                        <div class="flex-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">From</label>
+                            <input type="date" id="analytics-from" class="ios-input w-full p-2 text-xs mt-1">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">To</label>
+                            <input type="date" id="analytics-to" class="ios-input w-full p-2 text-xs mt-1">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="runAnalytics()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Go</button>
+                        </div>
+                    </div>
+
+                    <!-- Pane: By Doctor -->
+                    <div id="analytics-pane-doctor" class="analytics-pane active">
+                        <canvas id="chart-doctor" height="220"></canvas>
+                        <div id="doctor-stats" class="mt-4 space-y-2"></div>
+                    </div>
+
+                    <!-- Pane: By Date -->
+                    <div id="analytics-pane-date" class="analytics-pane">
+                        <canvas id="chart-date" height="220"></canvas>
+                    </div>
+
+                    <!-- Pane: By Mode -->
+                    <div id="analytics-pane-mode" class="analytics-pane">
+                        <canvas id="chart-mode" height="220"></canvas>
+                        <div id="mode-stats" class="mt-4 grid grid-cols-2 gap-3"></div>
+                    </div>
+                </div>
+
+                <button onclick="logoutAdmin()" class="w-full text-red-500 font-bold text-sm">Sign Out</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 ios-blur px-6 py-3 rounded-full text-sm font-bold shadow-2xl hidden z-[200]"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXJ_RnfjUDi7qPDATWVnS5lSFw6jVRYgo",
+            authDomain: "shopping-e284c.firebaseapp.com",
+            databaseURL: "https://shopping-e284c-default-rtdb.firebaseio.com",
+            projectId: "shopping-e284c",
+            storageBucket: "shopping-e284c.appspot.com",
+            messagingSenderId: "248274428739",
+            appId: "1:248274428739:web:fc30dd9eb1ef83f610c5f6",
+            measurementId: "G-ZXZCK9BW7T"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let doctors = [];
+        let times = [];
+        let chartDoctor = null, chartDate = null, chartMode = null;
+        let currentAnalyticsTab = 'doctor';
+
+        // ── INIT ──
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('pDate').value = today;
+            document.getElementById('pDate').min = today;
+            document.getElementById('filterDate').value = today;
+            document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+            // Analytics date range defaults: last 7 days
+            const d7 = new Date(); d7.setDate(d7.getDate() - 6);
+            document.getElementById('analytics-from').value = d7.toISOString().split('T')[0];
+            document.getElementById('analytics-to').value = today;
+
+            loadResources();
+            updateSlotAvailability(today);
+        };
+
+        // ── NAVIGATION ──
+        window.navigate = (pageId) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.replace('text-blue-600','text-gray-400'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            document.getElementById(`nav-${pageId}`).classList.replace('text-gray-400','text-blue-600');
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3000);
+        }
+
+        // ── MODE TOGGLE ──
+        window.setMode = (mode) => {
+            document.getElementById('pMode').value = mode;
+            document.getElementById('mode-offline').classList.toggle('active', mode === 'Offline');
+            document.getElementById('mode-online').classList.toggle('active', mode === 'Online');
+        };
+
+        // ── ADMIN AUTH ──
+        window.checkAdmin = () => {
+            if (document.getElementById('admin-pass').value === "admin123") {
+                document.getElementById('admin-auth').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                loadAdminData();
+            } else {
+                showToast("Invalid Access Key");
+            }
+        };
+        window.logoutAdmin = () => {
+            document.getElementById('admin-auth').classList.remove('hidden');
+            document.getElementById('admin-content').classList.add('hidden');
+            document.getElementById('admin-pass').value = "";
+        };
+
+        // ── RESOURCES ──
+        function loadResources() {
+            onValue(ref(db,'config/doctors'), (snap) => {
+                doctors = snap.val() ? Object.values(snap.val()) : ["Dr. Sarah Miller","Dr. James Wilson"];
+                const s = document.getElementById('pDoctor');
+                s.innerHTML = '<option value="" disabled selected>Select Doctor</option>' + doctors.map(d=>`<option value="${d}">${d}</option>`).join('');
+            });
+            onValue(ref(db,'config/times'), (snap) => {
+                times = snap.val() ? Object.values(snap.val()) : ["09:00 AM","10:00 AM","11:00 AM","02:00 PM","04:00 PM"];
+                const s = document.getElementById('pTime');
+                s.innerHTML = '<option value="" disabled selected>Select Time Slot</option>' + times.map(t=>`<option value="${t}">${t}</option>`).join('');
+            });
+        }
+        window.addDoctor = () => { const n=document.getElementById('new-doctor').value; if(!n)return; push(ref(db,'config/doctors'),n); document.getElementById('new-doctor').value=""; };
+        window.addTime  = () => { const v=document.getElementById('new-time').value; if(!v)return; push(ref(db,'config/times'),v); document.getElementById('new-time').value=""; };
+
+        // ── AVAILABILITY ──
+        async function updateSlotAvailability(date) {
+            const badge = document.getElementById('slots-left');
+            const snap = await get(ref(db,`appointments/${date}`));
+            const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+            const left = 5 - count;
+            // Update badge
+            badge.innerText = `${left} Slots Left`;
+            badge.className = left > 0 ? "bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold" : "bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold";
+        }
+        document.getElementById('pDate').addEventListener('change', e => updateSlotAvailability(e.target.value));
+
+        // ── BOOKING ──
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('pDate').value;
+            const time = document.getElementById('pTime').value;
+
+            const dailySnap = await get(ref(db,`appointments/${date}`));
+            if (dailySnap.exists() && Object.keys(dailySnap.val()).length >= 5) { showToast("Daily limit of 5 reached."); return; }
+            if (dailySnap.exists() && Object.values(dailySnap.val()).some(a => a.time === time)) { showToast("This time slot is already taken."); return; }
+
+            const payload = {
+                name:     document.getElementById('pName').value,
+                age:      document.getElementById('pAge').value,
+                place:    document.getElementById('pPlace').value,
+                doctor:   document.getElementById('pDoctor').value,
+                problem:  document.getElementById('pProblem').value,
+                contact:  document.getElementById('pContact').value,
+                time,
+                mode:     document.getElementById('pMode').value,
+                bookedAt: new Date().toISOString()
+            };
+
+            push(ref(db,`appointments/${date}`), payload).then((newRef) => {
+                // Populate receipt
+                const shortId = newRef.key.slice(-6).toUpperCase();
+                document.getElementById('r-id').innerText      = `ID: #${shortId}`;
+                document.getElementById('r-name').innerText    = payload.name;
+                document.getElementById('r-age').innerText     = `${payload.age} yrs`;
+                document.getElementById('r-place').innerText   = payload.place;
+                document.getElementById('r-doctor').innerText  = payload.doctor;
+                document.getElementById('r-date').innerText    = date;
+                document.getElementById('r-time').innerText    = payload.time;
+                document.getElementById('r-contact').innerText = payload.contact;
+
+                const modeEl = document.getElementById('r-mode');
+                const isOnline = payload.mode === 'Online';
+                modeEl.innerHTML = `<span class="receipt-mode-badge ${isOnline ? 'receipt-mode-online':'receipt-mode-offline'}">${payload.mode}</span>`;
+
+                document.getElementById('letter-modal').classList.remove('hidden');
+                document.getElementById('bookingForm').reset();
+                setMode('Offline'); // reset toggle
+                updateSlotAvailability(date);
+            });
+        });
+
+        window.closeLetter = () => document.getElementById('letter-modal').classList.add('hidden');
+
+        // ── DOWNLOAD RECEIPT ──
+        window.downloadReceipt = () => {
+            const card = document.getElementById('receipt-card');
+            html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Raha Counselling-Receipt-${document.getElementById('r-id').innerText.replace('ID: ','')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        };
+
+        // ── ADMIN LIST ──
+        function loadAdminData() {
+            const fDate = document.getElementById('filterDate');
+            onValue(ref(db,`appointments/${fDate.value}`), (snap) => {
+                const list = document.getElementById('admin-list');
+                list.innerHTML = "";
+                if (snap.exists()) {
+                    Object.entries(snap.val()).forEach(([id, app]) => {
+                        const modeColor = app.mode === 'Online' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50';
+                        const modeIcon  = app.mode === 'Online' ? '💻' : '🏥';
+                        list.innerHTML += `
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="font-bold text-sm">${app.name} (${app.age}y)</p>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-tighter">${app.place}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-bold bg-white border border-gray-200 px-2 py-1 rounded-md">${app.time}</span>
+                                    <span class="block mt-1 text-[10px] font-bold ${modeColor} px-2 py-1 rounded-md">${modeIcon} ${app.mode||'—'}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-blue-600 font-medium mb-2">With ${app.doctor}</p>
+                            <p class="text-xs text-gray-500 italic mb-3">"${app.problem}"</p>
+                            <div class="flex justify-between items-center">
+                                <a href="tel:${app.contact}" class="text-[10px] font-bold text-blue-500">CALL PATIENT</a>
+                                <button onclick="deleteApp('${fDate.value}','${id}')" class="text-[10px] font-bold text-red-400">REMOVE</button>
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    list.innerHTML = '<p class="text-center py-8 text-gray-400 text-sm">No bookings for this date.</p>';
+                }
+            });
+        }
+        document.getElementById('filterDate').addEventListener('change', loadAdminData);
+        window.deleteApp = (date, id) => { if(confirm("Cancel this appointment?")) remove(ref(db,`appointments/${date}/${id}`)); };
+
+        // ── ANALYTICS ──
+        window.switchAnalyticsTab = (tab) => {
+            currentAnalyticsTab = tab;
+            document.querySelectorAll('.analytics-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.analytics-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(`atab-${tab}`).classList.add('active');
+            document.getElementById(`analytics-pane-${tab}`).classList.add('active');
+            runAnalytics();
+        };
+
+        window.runAnalytics = async () => {
+            const from = document.getElementById('analytics-from').value;
+            const to   = document.getElementById('analytics-to').value;
+            if (!from || !to) { showToast("Select date range."); return; }
+
+            // Build date list
+            const dates = [];
+            let cur = new Date(from);
+            const end = new Date(to);
+            while (cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+
+            // Fetch all appointments in range
+            const allAppts = [];
+            const dateCountMap = {};
+            for (const d of dates) {
+                const snap = await get(ref(db,`appointments/${d}`));
+                const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+                dateCountMap[d] = count;
+                if (snap.exists()) Object.values(snap.val()).forEach(a => allAppts.push({ ...a, date: d }));
+            }
+
+            if (currentAnalyticsTab === 'doctor') renderDoctorChart(allAppts);
+            if (currentAnalyticsTab === 'date')   renderDateChart(dateCountMap, dates);
+            if (currentAnalyticsTab === 'mode')   renderModeChart(allAppts);
+        };
+
+        function renderDoctorChart(appts) {
+            const map = {};
+            appts.forEach(a => { map[a.doctor] = (map[a.doctor]||0) + 1; });
+            const labels = Object.keys(map);
+            const data   = Object.values(map);
+
+            const statsEl = document.getElementById('doctor-stats');
+            statsEl.innerHTML = labels.map((l,i) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="text-xs font-semibold">${l}</span>
+                    <span class="text-xs font-bold text-blue-600">${data[i]} appt${data[i]!==1?'s':''}</span>
+                </div>`).join('') || '<p class="text-center text-gray-400 text-xs py-4">No data in range.</p>';
+
+            if (chartDoctor) chartDoctor.destroy();
+            if (!labels.length) return;
+            const ctx = document.getElementById('chart-doctor').getContext('2d');
+            chartDoctor = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label:'Appointments', data, backgroundColor: labels.map((_,i)=>`hsl(${210+i*40},80%,60%)`), borderRadius: 8, borderSkipped: false }] },
+                options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#F2F2F7'} }, x:{grid:{display:false}} } }
+            });
+        }
+
+        function renderDateChart(dateCountMap, dates) {
+            const labels = dates;
+            const data   = dates.map(d => dateCountMap[d]);
+
+            if (chartDate) chartDate.destroy();
+            const ctx = document.getElementById('chart-date').getContext('2d');
+            chartDate = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ label:'Bookings', data, fill:true, borderColor:'#007AFF', backgroundColor:'rgba(0,122,255,0.08)', tension:0.4, pointBackgroundColor:'#007AFF', pointRadius:4 }] },
+                options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#F2F2F7'} }, x:{ ticks:{maxTicksLimit:7}, grid:{display:false} } } }
+            });
+        }
+
+        function renderModeChart(appts) {
+            const online  = appts.filter(a => a.mode === 'Online').length;
+            const offline = appts.filter(a => a.mode === 'Offline' || !a.mode).length;
+            const total   = online + offline;
+
+            const statsEl = document.getElementById('mode-stats');
+            statsEl.innerHTML = `
+                <div class="p-4 bg-green-50 rounded-xl text-center">
+                    <p class="text-2xl font-extrabold text-green-600">${online}</p>
+                    <p class="text-xs font-bold text-green-700 mt-1">💻 Online</p>
+                    <p class="text-[10px] text-green-500 mt-1">${total?Math.round(online/total*100):0}%</p>
+                </div>
+                <div class="p-4 bg-orange-50 rounded-xl text-center">
+                    <p class="text-2xl font-extrabold text-orange-600">${offline}</p>
+                    <p class="text-xs font-bold text-orange-700 mt-1">🏥 In-Person</p>
+                    <p class="text-[10px] text-orange-500 mt-1">${total?Math.round(offline/total*100):0}%</p>
+                </div>`;
+
+            if (chartMode) chartMode.destroy();
+            if (!total) return;
+            const ctx = document.getElementById('chart-mode').getContext('2d');
+            chartMode = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels:['Online','In-Person'], datasets:[{ data:[online,offline], backgroundColor:['#34C759','#FF9500'], borderWidth:0, hoverOffset:8 }] },
+                options: { responsive:true, cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{size:12} } } } }
+            });
+        }
+    </script>
+</body>
+</html>
