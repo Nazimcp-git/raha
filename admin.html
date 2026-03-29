@@ -1,30 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raha Counselling | Book Your Appointments</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Primary Meta Tags -->
+    <title>Admin Dashboard — Raha Counselling Centre | Manage Appointments</title>
+    <meta name="title" content="Admin Dashboard — Raha Counselling Centre">
+    <meta name="description"
+        content="Secure admin dashboard for Raha Counselling Centre. Manage appointments, view analytics, and monitor counseling sessions.">
+
+    <!-- IMPORTANT: Prevent indexing of admin pages -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="no-referrer">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.rahacare.in/admin.html">
+
+
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
-        body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; background-color: #F2F2F7; }
-        .ios-blur { backdrop-filter: saturate(180%) blur(20px); background-color: rgba(255,255,255,0.7); }
-        .ios-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
-        .ios-input { background: #F2F2F7; border: 1px solid transparent; transition: all 0.2s; border-radius: 12px; }
-        .ios-input:focus { background: #FFFFFF; border-color: #007AFF; box-shadow: 0 0 0 4px rgba(0,122,255,0.1); outline: none; }
-        .ios-btn { transition: transform 0.1s ease; }
-        .ios-btn:active { transform: scale(0.97); }
-        .page { display: none; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1); }
-        .page.active { display: block; }
-        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background-color: #F2F2F7;
+        }
+
+        .ios-blur {
+            backdrop-filter: saturate(180%) blur(20px);
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ios-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .ios-input {
+            background: #F2F2F7;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            border-radius: 12px;
+        }
+
+        .ios-input:focus {
+            background: #FFFFFF;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+            outline: none;
+        }
+
+        .ios-btn {
+            transition: transform 0.1s ease;
+        }
+
+        .ios-btn:active {
+            transform: scale(0.97);
+        }
+
+        .page {
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
 
         /* Mode Toggle */
-        .mode-toggle { display: flex; background: #F2F2F7; border-radius: 12px; padding: 4px; gap: 4px; }
-        .mode-btn { flex: 1; padding: 10px; border-radius: 9px; text-align: center; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: #8E8E93; border: none; background: transparent; }
-        .mode-btn.active { background: #FFFFFF; color: #007AFF; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .mode-toggle {
+            display: flex;
+            background: #F2F2F7;
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 9px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8E8E93;
+            border: none;
+            background: transparent;
+        }
+
+        .mode-btn.active {
+            background: #FFFFFF;
+            color: #007AFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
 
         /* Receipt Styles (for html2canvas) */
         #receipt-card {
@@ -33,35 +132,161 @@
             border-radius: 20px;
             padding: 28px;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
-        .receipt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .receipt-logo { font-size: 20px; font-weight: 800; color: #1C1C1E; }
-        .receipt-logo span { color: #007AFF; }
-        .receipt-id { font-size: 10px; font-weight: 700; color: #8E8E93; letter-spacing: 0.08em; text-transform: uppercase; }
-        .receipt-divider { border: none; border-top: 1px solid #F2F2F7; margin: 12px 0; }
-        .receipt-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .receipt-label { font-size: 11px; color: #8E8E93; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .receipt-value { font-size: 13px; color: #1C1C1E; font-weight: 600; text-align: right; max-width: 60%; }
-        .receipt-mode-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .receipt-mode-online { background: #E8F5E9; color: #2E7D32; }
-        .receipt-mode-offline { background: #FFF3E0; color: #E65100; }
-        .receipt-footer { margin-top: 18px; background: #F2F2F7; border-radius: 12px; padding: 12px; text-align: center; }
-        .receipt-footer p { font-size: 11px; color: #8E8E93; margin: 0; }
-        .receipt-qr { width: 48px; height: 48px; background: #007AFF; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+        .receipt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .receipt-logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1C1C1E;
+        }
+
+        .receipt-logo span {
+            color: #007AFF;
+        }
+
+        .receipt-id {
+            font-size: 10px;
+            font-weight: 700;
+            color: #8E8E93;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .receipt-divider {
+            border: none;
+            border-top: 1px solid #F2F2F7;
+            margin: 12px 0;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .receipt-label {
+            font-size: 11px;
+            color: #8E8E93;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .receipt-value {
+            font-size: 13px;
+            color: #1C1C1E;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .receipt-mode-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .receipt-mode-online {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .receipt-mode-offline {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .receipt-footer {
+            margin-top: 18px;
+            background: #F2F2F7;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .receipt-footer p {
+            font-size: 11px;
+            color: #8E8E93;
+            margin: 0;
+        }
+
+        .receipt-qr {
+            width: 48px;
+            height: 48px;
+            background: #007AFF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         /* Analytics Tab */
-        .analytics-tab-btn { flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 700; color: #8E8E93; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .analytics-tab-btn.active { color: #007AFF; border-bottom-color: #007AFF; }
-        .analytics-pane { display: none; }
-        .analytics-pane.active { display: block; }
+        .analytics-tab-btn {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #8E8E93;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .analytics-tab-btn.active {
+            color: #007AFF;
+            border-bottom-color: #007AFF;
+        }
+
+        .analytics-pane {
+            display: none;
+        }
+
+        .analytics-pane.active {
+            display: block;
+        }
 
         /* Modal Styles */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 20px; padding: 24px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
+
 <body class="text-slate-900">
 
     <!-- Header -->
@@ -69,8 +294,9 @@
         <div class="max-w-xl mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-tight">Raha<span class="text-blue-600">Counselling</span></h1>
             <nav class="flex gap-4">
-                <button onclick="navigate('booking')" id="nav-booking" class="text-sm font-semibold text-blue-600">Book</button>
-                
+                <button onclick="navigate('booking')" id="nav-booking"
+                    class="text-sm font-semibold text-blue-600">Book</button>
+
             </nav>
         </div>
     </header>
@@ -80,14 +306,16 @@
         <!-- ── BOOKING PAGE ── -->
         <section id="page-booking" class="page">
             <div class="mb-8">
-                <p id="current-date-display" class="text-blue-600 font-semibold text-sm mb-1 uppercase tracking-widest"></p>
+                <p id="current-date-display" class="text-blue-600 font-semibold text-sm mb-1 uppercase tracking-widest">
+                </p>
                 <h2 class="text-3xl font-extrabold">New Appointment</h2>
             </div>
 
             <div class="ios-card p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
                     <span class="text-sm font-medium text-gray-500">Selected Date Availability</span>
-                    <span id="slots-left" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Checking...</span>
+                    <span id="slots-left"
+                        class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Checking...</span>
                 </div>
 
                 <form id="bookingForm" class="space-y-4">
@@ -98,9 +326,11 @@
 
                     <!-- Mode Toggle -->
                     <div>
-                        <label class="text-xs font-bold text-gray-400 ml-1 uppercase block mb-2">Consultation Mode</label>
+                        <label class="text-xs font-bold text-gray-400 ml-1 uppercase block mb-2">Consultation
+                            Mode</label>
                         <div class="mode-toggle">
-                            <button type="button" class="mode-btn active" id="mode-offline" onclick="setMode('Offline')">
+                            <button type="button" class="mode-btn active" id="mode-offline"
+                                onclick="setMode('Offline')">
                                 🏥 In-Person
                             </button>
                             <button type="button" class="mode-btn" id="mode-online" onclick="setMode('Online')">
@@ -122,9 +352,11 @@
                     </select>
 
                     <input type="tel" id="pContact" placeholder="Contact Number" class="ios-input w-full p-4" required>
-                    <textarea id="pProblem" placeholder="What is the problem?" class="ios-input w-full p-4 h-24" required></textarea>
+                    <textarea id="pProblem" placeholder="What is the problem?" class="ios-input w-full p-4 h-24"
+                        required></textarea>
 
-                    <button type="submit" id="submitBtn" class="ios-btn w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200">
+                    <button type="submit" id="submitBtn"
+                        class="ios-btn w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200">
                         Request Appointment
                     </button>
                 </form>
@@ -139,9 +371,12 @@
 
             <!-- Admin Tabs -->
             <div class="flex mb-6 gap-2">
-                <button onclick="switchAdminTab('appointments')" id="admin-tab-appointments" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">Appointments</button>
-                <button onclick="switchAdminTab('doctors')" id="admin-tab-doctors" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Doctors</button>
-                <button onclick="switchAdminTab('analytics')" id="admin-tab-analytics" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Analytics</button>
+                <button onclick="switchAdminTab('appointments')" id="admin-tab-appointments"
+                    class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">Appointments</button>
+                <button onclick="switchAdminTab('doctors')" id="admin-tab-doctors"
+                    class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Doctors</button>
+                <button onclick="switchAdminTab('analytics')" id="admin-tab-analytics"
+                    class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Analytics</button>
             </div>
 
             <!-- Appointments Tab -->
@@ -162,7 +397,8 @@
             <!-- Doctors Management Tab -->
             <div id="admin-section-doctors" class="admin-section" style="display:none;">
                 <div class="ios-card p-6 mb-6">
-                    <button onclick="openAddDoctorModal()" class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg">
+                    <button onclick="openAddDoctorModal()"
+                        class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg">
                         + Add New Doctor
                     </button>
                 </div>
@@ -188,13 +424,17 @@
                             <input type="date" id="analytics-to" class="ios-input w-full p-4 mt-1">
                         </div>
                     </div>
-                    <button onclick="runAnalytics()" class="w-full mt-4 bg-purple-600 text-white font-bold py-3 rounded-xl">Generate Report</button>
+                    <button onclick="runAnalytics()"
+                        class="w-full mt-4 bg-purple-600 text-white font-bold py-3 rounded-xl">Generate Report</button>
                 </div>
 
                 <div class="flex mb-4 border-b border-gray-200">
-                    <button class="analytics-tab-btn active" id="atab-doctor" onclick="switchAnalyticsTab('doctor')">By Doctor</button>
-                    <button class="analytics-tab-btn" id="atab-date" onclick="switchAnalyticsTab('date')">By Date</button>
-                    <button class="analytics-tab-btn" id="atab-mode" onclick="switchAnalyticsTab('mode')">By Mode</button>
+                    <button class="analytics-tab-btn active" id="atab-doctor" onclick="switchAnalyticsTab('doctor')">By
+                        Doctor</button>
+                    <button class="analytics-tab-btn" id="atab-date" onclick="switchAnalyticsTab('date')">By
+                        Date</button>
+                    <button class="analytics-tab-btn" id="atab-mode" onclick="switchAnalyticsTab('mode')">By
+                        Mode</button>
                 </div>
 
                 <div id="analytics-pane-doctor" class="analytics-pane active">
@@ -232,19 +472,30 @@
                     <div class="receipt-header">
                         <div class="receipt-logo">Raha<span>Counselling</span></div>
                         <div class="receipt-qr">
-                            <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3z"/><path d="M17 17h1M19 19h1M21 17h1M17 19h1M19 21h1M21 21h1"/></svg>
+                            <svg width="24" height="24" fill="none" stroke="#fff" stroke-width="2">
+                                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3z" />
+                                <path d="M17 17h1M19 19h1M21 17h1M17 19h1M19 21h1M21 21h1" />
+                            </svg>
                         </div>
                     </div>
                     <hr class="receipt-divider">
-                    <div class="receipt-row"><span class="receipt-label">Patient</span><span class="receipt-value" id="r-name">—</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Age / Location</span><span class="receipt-value"><span id="r-age">—</span>y · <span id="r-place">—</span></span></div>
+                    <div class="receipt-row"><span class="receipt-label">Patient</span><span class="receipt-value"
+                            id="r-name">—</span></div>
+                    <div class="receipt-row"><span class="receipt-label">Age / Location</span><span
+                            class="receipt-value"><span id="r-age">—</span>y · <span id="r-place">—</span></span></div>
                     <hr class="receipt-divider">
-                    <div class="receipt-row"><span class="receipt-label">Date</span><span class="receipt-value" id="r-date">—</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Doctor</span><span class="receipt-value" id="r-doctor">—</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Contact</span><span class="receipt-value" id="r-contact">—</span></div>
+                    <div class="receipt-row"><span class="receipt-label">Date</span><span class="receipt-value"
+                            id="r-date">—</span></div>
+                    <div class="receipt-row"><span class="receipt-label">Doctor</span><span class="receipt-value"
+                            id="r-doctor">—</span></div>
+                    <div class="receipt-row"><span class="receipt-label">Contact</span><span class="receipt-value"
+                            id="r-contact">—</span></div>
                     <hr class="receipt-divider">
-                    <div class="receipt-row"><span class="receipt-label">Concern</span><span class="receipt-value" id="r-problem">—</span></div>
-                    <div class="receipt-row"><span class="receipt-label">Mode</span><span class="receipt-value"><span id="r-mode-badge" class="receipt-mode-badge receipt-mode-offline">🏥 In-Person</span></span></div>
+                    <div class="receipt-row"><span class="receipt-label">Concern</span><span class="receipt-value"
+                            id="r-problem">—</span></div>
+                    <div class="receipt-row"><span class="receipt-label">Mode</span><span class="receipt-value"><span
+                                id="r-mode-badge" class="receipt-mode-badge receipt-mode-offline">🏥
+                                In-Person</span></span></div>
                     <div class="receipt-footer">
                         <p>Thank you for choosing Raha Counselling</p>
                         <p id="r-id" class="receipt-id mt-2">REF: —</p>
@@ -252,8 +503,10 @@
                 </div>
 
                 <div class="space-y-3">
-                    <button onclick="downloadReceipt()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Download Receipt</button>
-                    <button onclick="closeSuccessModal()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Close</button>
+                    <button onclick="downloadReceipt()"
+                        class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Download Receipt</button>
+                    <button onclick="closeSuccessModal()"
+                        class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Close</button>
                 </div>
             </div>
         </div>
@@ -266,15 +519,19 @@
                     <input type="hidden" id="editDoctorId">
                     <div>
                         <label class="text-xs font-bold text-gray-400 ml-1 uppercase">Doctor Name</label>
-                        <input type="text" id="doctorName" placeholder="Dr. John Doe" class="ios-input w-full p-4 mt-1" required>
+                        <input type="text" id="doctorName" placeholder="Dr. John Doe" class="ios-input w-full p-4 mt-1"
+                            required>
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-400 ml-1 uppercase">Specialization</label>
-                        <input type="text" id="doctorSpecialization" placeholder="Clinical Psychologist" class="ios-input w-full p-4 mt-1" required>
+                        <input type="text" id="doctorSpecialization" placeholder="Clinical Psychologist"
+                            class="ios-input w-full p-4 mt-1" required>
                     </div>
                     <div class="flex gap-3">
-                        <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">Save</button>
-                        <button type="button" onclick="closeDoctorModal()" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Cancel</button>
+                        <button type="submit"
+                            class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl">Save</button>
+                        <button type="button" onclick="closeDoctorModal()"
+                            class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -283,7 +540,9 @@
     </main>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-semibold opacity-0 transition-opacity pointer-events-none"></div>
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-semibold opacity-0 transition-opacity pointer-events-none">
+    </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -474,7 +733,7 @@
         window.loadDoctorsList = async () => {
             const snap = await get(ref(db, 'doctors'));
             const list = document.getElementById('doctorsList');
-            
+
             if (snap.exists()) {
                 const doctors = snap.val();
                 list.innerHTML = '';
@@ -521,7 +780,7 @@
 
         document.getElementById('doctorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const editId = document.getElementById('editDoctorId').value;
             const doctorData = {
                 name: document.getElementById('doctorName').value,
@@ -566,7 +825,7 @@
                     list.innerHTML = '';
                     Object.entries(apps).forEach(([id, app]) => {
                         const modeColor = app.mode === 'Online' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
-                        const modeIcon  = app.mode === 'Online' ? '💻' : '🏥';
+                        const modeIcon = app.mode === 'Online' ? '💻' : '🏥';
                         list.innerHTML += `
                         <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                             <div class="flex justify-between items-start mb-2">
@@ -575,7 +834,7 @@
                                     <p class="text-[10px] text-gray-400 uppercase tracking-tighter">${app.place}</p>
                                 </div>
                                 <div class="text-right">
-                                    <span class="block text-[10px] font-bold ${modeColor} px-2 py-1 rounded-md">${modeIcon} ${app.mode||'—'}</span>
+                                    <span class="block text-[10px] font-bold ${modeColor} px-2 py-1 rounded-md">${modeIcon} ${app.mode || '—'}</span>
                                 </div>
                             </div>
                             <p class="text-xs text-blue-600 font-medium mb-2">With ${app.doctor}</p>
@@ -592,7 +851,7 @@
             });
         }
         document.getElementById('filterDate').addEventListener('change', loadAdminData);
-        window.deleteApp = (date, id) => { if(confirm("Cancel this appointment?")) remove(ref(db,`appointments/${date}/${id}`)); };
+        window.deleteApp = (date, id) => { if (confirm("Cancel this appointment?")) remove(ref(db, `appointments/${date}/${id}`)); };
 
         // ── ANALYTICS ──
         window.switchAnalyticsTab = (tab) => {
@@ -606,41 +865,41 @@
 
         window.runAnalytics = async () => {
             const from = document.getElementById('analytics-from').value;
-            const to   = document.getElementById('analytics-to').value;
+            const to = document.getElementById('analytics-to').value;
             if (!from || !to) { showToast("Select date range."); return; }
 
             // Build date list
             const dates = [];
             let cur = new Date(from);
             const end = new Date(to);
-            while (cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+            while (cur <= end) { dates.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
 
             // Fetch all appointments in range
             const allAppts = [];
             const dateCountMap = {};
             for (const d of dates) {
-                const snap = await get(ref(db,`appointments/${d}`));
+                const snap = await get(ref(db, `appointments/${d}`));
                 const count = snap.exists() ? Object.keys(snap.val()).length : 0;
                 dateCountMap[d] = count;
                 if (snap.exists()) Object.values(snap.val()).forEach(a => allAppts.push({ ...a, date: d }));
             }
 
             if (currentAnalyticsTab === 'doctor') renderDoctorChart(allAppts);
-            if (currentAnalyticsTab === 'date')   renderDateChart(dateCountMap, dates);
-            if (currentAnalyticsTab === 'mode')   renderModeChart(allAppts);
+            if (currentAnalyticsTab === 'date') renderDateChart(dateCountMap, dates);
+            if (currentAnalyticsTab === 'mode') renderModeChart(allAppts);
         };
 
         function renderDoctorChart(appts) {
             const map = {};
-            appts.forEach(a => { map[a.doctor] = (map[a.doctor]||0) + 1; });
+            appts.forEach(a => { map[a.doctor] = (map[a.doctor] || 0) + 1; });
             const labels = Object.keys(map);
-            const data   = Object.values(map);
+            const data = Object.values(map);
 
             const statsEl = document.getElementById('doctor-stats');
-            statsEl.innerHTML = labels.map((l,i) => `
+            statsEl.innerHTML = labels.map((l, i) => `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                     <span class="text-xs font-semibold">${l}</span>
-                    <span class="text-xs font-bold text-blue-600">${data[i]} appt${data[i]!==1?'s':''}</span>
+                    <span class="text-xs font-bold text-blue-600">${data[i]} appt${data[i] !== 1 ? 's' : ''}</span>
                 </div>`).join('') || '<p class="text-center text-gray-400 text-xs py-4">No data in range.</p>';
 
             if (chartDoctor) chartDoctor.destroy();
@@ -648,40 +907,40 @@
             const ctx = document.getElementById('chart-doctor').getContext('2d');
             chartDoctor = new Chart(ctx, {
                 type: 'bar',
-                data: { labels, datasets: [{ label:'Appointments', data, backgroundColor: labels.map((_,i)=>`hsl(${210+i*40},80%,60%)`), borderRadius: 8, borderSkipped: false }] },
-                options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#F2F2F7'} }, x:{grid:{display:false}} } }
+                data: { labels, datasets: [{ label: 'Appointments', data, backgroundColor: labels.map((_, i) => `hsl(${210 + i * 40},80%,60%)`), borderRadius: 8, borderSkipped: false }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#F2F2F7' } }, x: { grid: { display: false } } } }
             });
         }
 
         function renderDateChart(dateCountMap, dates) {
             const labels = dates;
-            const data   = dates.map(d => dateCountMap[d]);
+            const data = dates.map(d => dateCountMap[d]);
 
             if (chartDate) chartDate.destroy();
             const ctx = document.getElementById('chart-date').getContext('2d');
             chartDate = new Chart(ctx, {
                 type: 'line',
-                data: { labels, datasets: [{ label:'Bookings', data, fill:true, borderColor:'#007AFF', backgroundColor:'rgba(0,122,255,0.08)', tension:0.4, pointBackgroundColor:'#007AFF', pointRadius:4 }] },
-                options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#F2F2F7'} }, x:{ ticks:{maxTicksLimit:7}, grid:{display:false} } } }
+                data: { labels, datasets: [{ label: 'Bookings', data, fill: true, borderColor: '#007AFF', backgroundColor: 'rgba(0,122,255,0.08)', tension: 0.4, pointBackgroundColor: '#007AFF', pointRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#F2F2F7' } }, x: { ticks: { maxTicksLimit: 7 }, grid: { display: false } } } }
             });
         }
 
         function renderModeChart(appts) {
-            const online  = appts.filter(a => a.mode === 'Online').length;
+            const online = appts.filter(a => a.mode === 'Online').length;
             const offline = appts.filter(a => a.mode === 'Offline' || !a.mode).length;
-            const total   = online + offline;
+            const total = online + offline;
 
             const statsEl = document.getElementById('mode-stats');
             statsEl.innerHTML = `
                 <div class="p-4 bg-green-50 rounded-xl text-center">
                     <p class="text-2xl font-extrabold text-green-600">${online}</p>
                     <p class="text-xs font-bold text-green-700 mt-1">💻 Online</p>
-                    <p class="text-[10px] text-green-500 mt-1">${total?Math.round(online/total*100):0}%</p>
+                    <p class="text-[10px] text-green-500 mt-1">${total ? Math.round(online / total * 100) : 0}%</p>
                 </div>
                 <div class="p-4 bg-orange-50 rounded-xl text-center">
                     <p class="text-2xl font-extrabold text-orange-600">${offline}</p>
                     <p class="text-xs font-bold text-orange-700 mt-1">🏥 In-Person</p>
-                    <p class="text-[10px] text-orange-500 mt-1">${total?Math.round(offline/total*100):0}%</p>
+                    <p class="text-[10px] text-orange-500 mt-1">${total ? Math.round(offline / total * 100) : 0}%</p>
                 </div>`;
 
             if (chartMode) chartMode.destroy();
@@ -689,10 +948,11 @@
             const ctx = document.getElementById('chart-mode').getContext('2d');
             chartMode = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels:['Online','In-Person'], datasets:[{ data:[online,offline], backgroundColor:['#34C759','#FF9500'], borderWidth:0, hoverOffset:8 }] },
-                options: { responsive:true, cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{size:12} } } } }
+                data: { labels: ['Online', 'In-Person'], datasets: [{ data: [online, offline], backgroundColor: ['#34C759', '#FF9500'], borderWidth: 0, hoverOffset: 8 }] },
+                options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } } } }
             });
         }
     </script>
 </body>
+
 </html>
